@@ -294,7 +294,7 @@ static void free_exprtree(exprtree* expr) {
 }
 
 /* Main loop */
-int main(int argc, char* argv[]) 
+int main1(int argc, char* argv[]) 
 {
     if (argc == 2)
     {
