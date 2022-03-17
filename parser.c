@@ -224,7 +224,13 @@ exprtree* parse_number(parser_t* parser) {
 
     char number[MAX_INPUT_SIZE];
     int numberlen = 0;
-
+    int negatif = 0;
+    if (strchr("-", parser->tokens[parser->pos]))
+    {
+        //number[numberlen] = parser->tokens[parser->pos];
+        negatif = 1;
+        parser->pos++;
+    }
     // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
     while (strchr("0123456789", parser->tokens[parser->pos]) && numberlen < MAX_INPUT_SIZE && parser->pos < parser->ntokens) {
 
@@ -238,9 +244,16 @@ exprtree* parse_number(parser_t* parser) {
         fprintf(stderr, "Invalid input, couldn't parse number\n");
         exit(1);
     }
-
+    int value;
     // Convert the number characters array to an int
-    int value = atoi(number);
+    if (negatif == 1)
+    {
+        value = -atoi(number);
+    }
+    else
+    {
+        value = atoi(number);
+    }
     
     // Create an expression of type 'n' with the value set as the number value
     exprtree* number_expr = create_exprtree('n', value, NULL, NULL);
@@ -286,7 +299,7 @@ int main(int argc, char* argv[])
     if (argc == 2)
     {
         int res = parse_char(argv[1]);
-        printf("The result is: %d\n", res);
+        printf("%d\n", res);
     }
     return 0;
 }
