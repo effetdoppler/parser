@@ -11,7 +11,7 @@ typedef enum TokenType
 } TokenType;
 
 typedef struct Token {
-    int value;
+    char* value;
     TokenType type;
 } Token;
 
@@ -25,7 +25,7 @@ typedef struct parser_t {
 
 // Create expression tree structure to hold our expression
 typedef struct exprtree {
-    char type;
+    char* type;
     double value;
     struct exprtree* left;
     struct exprtree* right;
@@ -61,28 +61,10 @@ Token* parse_char(char* input)
         return tokens;
 }
 
-int isnumber(char* in, int* ind)
+
+int test_operator(char* in, int ind)
 {
-    /* number := (0-9)+ */
-
-    char number[MAX_INPUT_SIZE];
-    int numberlen = 0;
-    int i = *ind;
-    // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
-    while (strchr("0123456789", in[i]) && numberlen < MAX_INPUT_SIZE) {
-
-        number[numberlen++] = in[i];
-        i++;
-        *ind = i;
-    }
-    number[numberlen] = '\0';
-
-    return atoi(number);
-}
-
-int test_operator(char* in, int* ind)
-{
-    if (strchr(OPERATOR, in[*ind+1]))
+    if (strchr(OPERATOR, in[ind+1]))
         return 1;
     return 0;
 }
@@ -98,7 +80,6 @@ Token* tokenize(char* in) {
     // Iterate over the input string and everytime a token is found, add it to the tokens
     int in_len = strlen(in);
     int i = 0;
-    int *ind = &i;
     while (i < in_len)
     {
         // Check if input character is a valid token
@@ -106,7 +87,17 @@ Token* tokenize(char* in) {
         if (strchr(NUMBER, in[i]))
         {
             // Add to number if it is
-            tok->value = isnumber(in, ind);
+            char number[MAX_INPUT_SIZE];
+            int numberlen = 0;
+            // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
+            while (strchr("0123456789", in[i]) && numberlen < MAX_INPUT_SIZE) {
+
+                number[numberlen++] = in[i];
+                i++;
+            }
+            number[numberlen] = '\0';
+            //settup token
+            tok->value = number;
             tok->type = Number;
             tokens[token_pos++] = *tok;
         }
@@ -116,9 +107,9 @@ Token* tokenize(char* in) {
             if (strchr(OPERATOR, in[i]))
             {
                 // Add to tokens if it is
-                if (test_operator(in, ind) == 1)
+                if (test_operator(in, i) == 1)
                     err(EXIT_FAILURE, "Invalid syntax: two operator");
-                tok->value = in[i];
+                tok->value = &in[i];
                 tok->type = Operator;
                 tokens[token_pos++] = *tok;
                 i++;
