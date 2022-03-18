@@ -2,26 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <err.h>
-
-typedef enum TokenType
-{
-    Number,
-    Operator,
-    Parenthese
-} TokenType;
-
-typedef struct Token {
-    char* value;
-    TokenType type;
-} Token;
-
-// Create parser structure to keep track of the tokens consumed
-typedef struct parser_t {
-    Token* tokens;
-    int ntokens;
-    int pos;
-    char type;
-} parser_t;
+#include "parser2.h"
 
 // Create expression tree structure to hold our expression
 typedef struct exprtree {
@@ -38,7 +19,6 @@ typedef struct exprtree {
 #define MAX_INPUT_SIZE 100
 
 // Important function declarations
-Token* tokenize(char*);
 exprtree* parse(char*);
 int calculate(exprtree*);
 
@@ -52,16 +32,6 @@ int calculate(exprtree*);
 
 
 
-Token* parse_char(char* input)
-{
-        // 2. Get tokens from the input string
-        Token* tokens = tokenize(input);
-
-
-        return tokens;
-}
-
-
 int test_operator(char* in, int ind)
 {
     if (strchr(OPERATOR, in[ind+1]))
@@ -70,7 +40,7 @@ int test_operator(char* in, int ind)
 }
 
 /* Convert input string into tokens */
-Token* tokenize(char* in) {
+Token* tokenize(const char* in, int* nbTokens) {
 
     // Allocate space for the tokens (each token is a character)
     Token* tokens = malloc(sizeof(Token) * MAX_INPUT_SIZE);
@@ -118,31 +88,6 @@ Token* tokenize(char* in) {
     }
     // Terminate the tokens string with null
 
+    *nbTokens = token_pos;
     return tokens;
 }
-
-
-/* Calculator grammar:
- *
- * add_expression := mult_expression (('+' | '-') mult_expression)*
- *
- * mult_expression := atomic_expression (('*' | '/') atomic_expression)*
- *
- * atomic_expression := number | left_parenthesis add_expression right_parenthesis
- *
- * number := (0-9)+
- *
- */
-
-/* Parse tokens into expression tree based on grammar */
-
-/* Main loop */
-int main(int argc, char* argv[]) 
-{
-    if (argc == 2)
-    {
-        Token* res = parse_char(argv[1]);
-    }
-    return 0;
-}
-
