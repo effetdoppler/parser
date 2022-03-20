@@ -14,7 +14,8 @@ typedef struct exprtree {
 
 #define VALID_TOKENS "+-*/0123456789()"
 #define OPERATOR "+-*/"
-#define NUMBER "0123456789"
+#define NUMBER "0123456789."
+#define SEPARATOR "()"
 
 #define MAX_INPUT_SIZE 100
 
@@ -34,6 +35,8 @@ int calculate(exprtree*);
 
 int test_operator(char* in, int ind)
 {
+    if (ind+1 == strlen(in))
+        return 2;
     if (strchr(OPERATOR, in[ind+1]))
         return 1;
     return 0;
@@ -54,19 +57,22 @@ Token* tokenize(const char* in, int* nbTokens) {
     {
         // Check if input character is a valid token
         Token *tok = malloc(sizeof(Token));
+        int start = i;
         if (strchr(NUMBER, in[i]))
         {
             // Add to number if it is
-            char number[MAX_INPUT_SIZE];
-            int numberlen = 0;
             // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
-            while (strchr("0123456789", in[i]) && numberlen < MAX_INPUT_SIZE) {
-
-                number[numberlen++] = in[i];
+            while (strchr(NUMBER, in[i]) && i-start < MAX_INPUT_SIZE && i < in_len) 
                 i++;
-            }
-            number[numberlen] = '\0';
             //settup token
+            char *number = malloc((i-start+1)*sizeof(char));
+            int ind = 0;
+            while(start < i){
+                number[ind] = in[start];
+                start++;
+                ind++;
+            }
+            number[ind] = '\0';
             tok->value = number;
             tok->type = Number;
             tokens[token_pos++] = *tok;
@@ -78,13 +84,24 @@ Token* tokenize(const char* in, int* nbTokens) {
             {
                 // Add to tokens if it is
                 if (test_operator(in, i) == 1)
-                    err(EXIT_FAILURE, "Invalid syntax: two operator");
-                tok->value = &in[i];
+                    errx(EXIT_FAILURE, "Invalid syntax: two operator");
+                else
+                {
+                    if(test_operator(in, i) == 2)
+                        errx(EXIT_FAILURE, "Invalid syntax: no expression after an operator");
+                }
                 tok->type = Operator;
-                tokens[token_pos++] = *tok;
-                i++;
             }
+            if (strchr(SEPARATOR, in[i]))
+                tok->type = Separator;
+            char *op = malloc((2)*sizeof(char));
+            op[0] = in[i];
+            op[1] = '\0';
+            tok->value = op;
+            tokens[token_pos++] = *tok;
+            i++;
         }
+        free(tok);
     }
     // Terminate the tokens string with null
 

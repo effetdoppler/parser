@@ -5,7 +5,7 @@ typedef enum TokenType
 {
     Number,
     Operator,
-    Parenthese
+    Separator
 } TokenType;
 
 typedef struct Token {
