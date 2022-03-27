@@ -35,6 +35,7 @@ int TestToken(const char* name, Token expected[])
 {
     int nb;
     Token* tokens = tokenize(name, &nb);
+    //int res = parse_char(name);
     if (EqualTokens(tokens, nb, expected))
     {
         printf(ANSI_COLOR_GREEN "pass %s" ANSI_COLOR_RESET "\n", name);
@@ -83,10 +84,8 @@ int main()
     TestTokenx("33",  "33", "");
     TestTokenx("3+33",  "3", "+", "33",  "");
     TestTokenx("3.1+33",  "3.1", "+", "33",  "");
-    TestTokenx("3+33+",  "3", "+",  "33", "(",  "");
     TestTokenx("(33+3)", "(", "33", "+", "3", ")", "");
     TestTokenx("(33+3)*8/7-5", "(", "33", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
     
-    TestTokenx("+/", "");
     return 0;
 }

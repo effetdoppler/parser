@@ -101,23 +101,22 @@ Token* tokenize(const char* in, int* nbTokens) {
 }
 
 /* Parse tokens into expression tree based on grammar */
-exprtree* parse(Token* tokens) {
+exprtree* parse(Token* tokens, int nbtok) {
 
     // Allocate memory for the parse structure
     parser_t* parser = malloc(sizeof(parser_t));
 
     // Set initial values for the parser
     parser->tokens = tokens;
-    parser->ntokens = strlen(tokens);
+    parser->ntokens = nbtok;
     parser->pos = 0;
 
     // Calculate the expression starting by parsing the tokens starting with the lowest priority
-    //exprtree* expression = parse_add_expression(parser);
+    exprtree* expression = parse_add_expression(parser);
 
     // Free allocated memory
     free(parser->tokens);
     free(parser);
-    exprtree* expression = NULL;
     return expression;
 }
 
@@ -149,10 +148,10 @@ exprtree* parse_add_expression(parser_t* parser) {
     exprtree* expr = parse_mult_expression(parser);
     
     // After the mult_expression, add_expression can find 0 or more (+ or -) followed by another mult_expression
-    while (parser->pos < parser->ntokens && (parser->tokens[parser->pos].value == '+' || parser->tokens[parser->pos].value == '-')) {
+    while (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == '+' || *parser->tokens[parser->pos].value == '-')) {
 
         // Set expression type as either addition or subtraction
-        char type = parser->tokens[parser->pos].value;
+        char type = *parser->tokens[parser->pos].value;
 
         // Consume the addition or subtraction token
         parser->pos++;
@@ -177,7 +176,7 @@ exprtree* parse_mult_expression(parser_t* parser) {
     exprtree* expr = parse_atomic_expression(parser);
     
     // mult_expression can find 0 or more (* or /) followed by another atomic_expression
-    while (parser->pos < parser->ntokens && (parser->tokens[parser->pos].value == '*' || parser->tokens[parser->pos].value == '/')) {
+    while (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == '*' || *parser->tokens[parser->pos].value == '/')) {
 
         // set expression type as either multiplication or division
         char type = parser->tokens[parser->pos].value;
@@ -203,7 +202,7 @@ exprtree* parse_atomic_expression(parser_t* parser) {
     exprtree* expr;
 
     // If we find parenthesis, then we read an add_expression as an atomic one
-    if (parser->tokens[parser->pos].value == '(') {
+    if (*parser->tokens[parser->pos].value == '(') {
 
         parser->pos++; // Consume parenthesis
 
@@ -211,7 +210,7 @@ exprtree* parse_atomic_expression(parser_t* parser) {
         expr = parse_add_expression(parser);
 
         // Consume the closing parenthesis
-        if (parser->tokens[parser->pos].value == ')')
+        if (*parser->tokens[parser->pos].value == ')')
             parser->pos++;
         else {
             
@@ -235,24 +234,25 @@ exprtree* parse_number(parser_t* parser) {
     /* number := (0-9)+ */
 
     int negatif = 0;
-    if (strchr("-", parser->tokens[parser->pos].value))
+    if (strchr("-", *parser->tokens[parser->pos].value))
     {
         //number[numberlen] = parser->tokens[parser->pos];
         negatif = 1;
         parser->pos++;
     }
 
-    int value;
+    double value;
     // Convert the number characters array to an int
     if (negatif == 1)
     {
-        value = -atoi(parser->tokens[parser->pos].value);
+        value = -atof(parser->tokens[parser->pos].value);
     }
     else
     {
-        value = atoi(parser->tokens[parser->pos].value);
+        value = atof(parser->tokens[parser->pos].value);
     }
-    
+
+    parser->pos++;
     // Create an expression of type 'n' with the value set as the number value
     exprtree* number_expr = create_exprtree('n', value, NULL, NULL);
 
@@ -260,7 +260,7 @@ exprtree* parse_number(parser_t* parser) {
 
 }
 
-static exprtree* create_exprtree(char type, int value, exprtree* left, exprtree* right) {
+static exprtree* create_exprtree(char type, double value, exprtree* left, exprtree* right) {
 
     // Allocate memory for the expression
     exprtree* expr = malloc(sizeof(exprtree));
@@ -297,7 +297,7 @@ int parse_char(char* input)
         Token* tokens = tokenize(input, &nbtoken);
 
         // 3. Create expression tree from tokens
-        exprtree* expression = parse(tokens);
+        exprtree* expression = parse(tokens, nbtoken);
 
         // 4. Calculate the value of the expression
         int value = calculate(expression);
@@ -307,14 +307,4 @@ int parse_char(char* input)
         free_exprtree(expression);
 
         return value;
-}
-
-int main(int argc, char* argv[]) 
-{
-    if (argc == 2)
-    {
-        int res = parse_char(argv[1]);
-        printf("%d\n", res);
-    }
-    return 0;
 }
