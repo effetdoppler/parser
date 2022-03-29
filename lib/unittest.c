@@ -35,7 +35,6 @@ int TestToken(const char* name, Token expected[])
 {
     int nb;
     Token* tokens = tokenize(name, &nb);
-    //int res = parse_char(name);
     if (EqualTokens(tokens, nb, expected))
     {
         printf(ANSI_COLOR_GREEN "pass %s" ANSI_COLOR_RESET "\n", name);
@@ -47,6 +46,8 @@ int TestToken(const char* name, Token expected[])
         return 0;
     }
 }
+
+//int test_parser()
 
 int TestTokenx(const char* name, ...)
 {
@@ -78,6 +79,16 @@ int TestTokenx(const char* name, ...)
 }
 
 
+int Testparser(char* name, double expected)
+{
+    double res = parse_char(name);
+    if (res == expected)
+        printf(ANSI_COLOR_GREEN "pass %g" ANSI_COLOR_RESET "\n", res);
+    else
+        printf(ANSI_COLOR_RED "fail %g" ANSI_COLOR_RESET "\n", res);
+}
+
+
 int main() 
 {
     TestTokenx("3",  "3", "");
@@ -86,6 +97,12 @@ int main()
     TestTokenx("3.1+33",  "3.1", "+", "33",  "");
     TestTokenx("(33+3)", "(", "33", "+", "3", ")", "");
     TestTokenx("(33+3)*8/7-5", "(", "33", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
+    TestTokenx("(3.3+3)*8/7-5", "(", "3.3", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
+    Testparser("3", 3);
+    Testparser("3+7-6", 4);
+    Testparser("64*10", 640);
+    Testparser("6.5*2", 13);
+    Testparser("6.5/2", 3.25);
     
     return 0;
 }

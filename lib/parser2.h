@@ -31,11 +31,11 @@ typedef struct exprtree {
 
 Token* tokenize(const char*, int* nb);
 exprtree* parse(Token* tokens, int nbtok);
-int calculate(exprtree*);
+double calculate(exprtree*);
 exprtree* parse_number(parser);
 exprtree* parse_add_expression(parser);
 exprtree* parse_mult_expression(parser);
 exprtree* parse_atomic_expression(parser);
 static exprtree* create_exprtree(char type, double value, exprtree* left, exprtree* right);
-int parse_char(char* input);
+double parse_char(char* input);
 #endif // #define PARSER2_H

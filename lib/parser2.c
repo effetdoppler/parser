@@ -51,10 +51,17 @@ Token* tokenize(const char* in, int* nbTokens) {
         int start = i;
         if (strchr(NUMBER, in[i]))
         {
+            int wrong_number = 0;
             // Add to number if it is
             // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
             while (strchr(NUMBER, in[i]) && i-start < MAX_INPUT_SIZE && i < in_len) 
+            {
+                if(in[i] == '.')
+                    wrong_number++;
                 i++;
+            }
+            if (wrong_number > 1)
+                 errx(EXIT_FAILURE, "Invalid syntax: not a number");
             //settup token
             char *number = malloc((i-start+1)*sizeof(char));
             int ind = 0;
@@ -120,13 +127,13 @@ exprtree* parse(Token* tokens, int nbtok) {
     return expression;
 }
 
-int calculate(exprtree* expr) {
+double calculate(exprtree* expr) {
 
     if (expr->type == 'n')
         return expr->value;
 
-    int left = calculate(expr->left);
-    int right = calculate(expr->right);
+    double left = calculate(expr->left);
+    double right = calculate(expr->right);
     
     if (expr->type == '+')
         return left + right;
@@ -135,7 +142,7 @@ int calculate(exprtree* expr) {
     else if (expr->type == '*')
         return left * right;
     else if (expr->type == '/')
-        return left / right ? right : 0;
+        return left / right;
 
     return 0;
 }
@@ -179,7 +186,7 @@ exprtree* parse_mult_expression(parser_t* parser) {
     while (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == '*' || *parser->tokens[parser->pos].value == '/')) {
 
         // set expression type as either multiplication or division
-        char type = parser->tokens[parser->pos].value;
+        char type = *parser->tokens[parser->pos].value;
 
         // consume the multiplication or division token
         parser->pos++;
@@ -290,7 +297,7 @@ static void free_exprtree(exprtree* expr) {
 
     }
 }
-int parse_char(char* input)
+double parse_char(char* input)
 {
         // 2. Get tokens from the input string
         int nbtoken;
@@ -300,7 +307,7 @@ int parse_char(char* input)
         exprtree* expression = parse(tokens, nbtoken);
 
         // 4. Calculate the value of the expression
-        int value = calculate(expression);
+        double value = calculate(expression);
 
 
         // 6. Free the memory allocated for the expression
