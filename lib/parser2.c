@@ -14,17 +14,32 @@
 
 #define MAX_INPUT_SIZE 100
 
-// Important function declarations
+// Create parser structure to keep track of the tokens consumed
+typedef struct parser_t {
+    Token* tokens;
+    int ntokens;
+    int pos;
+    char type;
+} parser_t;
+
+
+typedef struct exprtree {
+    char type;
+    double value;
+    struct exprtree* left;
+    struct exprtree* right;
+} exprtree;
 
 
 // Helper parsing functions
-//static void free_exprtree(exprtree*);
-//static exprtree* create_exprtree(char, int, exprtree*, exprtree*);
-//exprtree* parse_add_expression(parser_t* parser);
-//exprtree* parse_mult_expression(parser_t* parser);
-//exprtree* parse_atomic_expression(parser_t* parser);
-//exprtree* parse_number(parser_t* parser);
 
+exprtree* parse(Token* tokens, int nbtok);
+double calculate(exprtree*);
+exprtree* parse_number(parser_t* parser);
+exprtree* parse_add_expression(parser_t* parser);
+exprtree* parse_mult_expression(parser_t* parser);
+exprtree* parse_power_expression(parser_t* parser);
+exprtree* parse_atomic_expression(parser_t* parser);
 
 
 size_t test_operator(const char* in, size_t ind)
@@ -356,7 +371,7 @@ static void free_exprtree(exprtree* expr) {
 
     }
 }
-double parse_char(char* input)
+double parse_char(const char* input)
 {
         // 2. Get tokens from the input string
         int nbtoken;
