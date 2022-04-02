@@ -93,6 +93,13 @@ int Testparser(char* name, double expected)
 int main() 
 {
     
+    Testparser("3^5", 32);
+    Testparser("2^5", 32);
+    Testparser("c(π)", 10);
+    Testparser("s(π)", 10);
+    Testparser("l(1)", 10);
+    Testparser("c(98)", 10);
+    Testparser("e(1)", 10);
     TestTokenx("c(32)",  "c", "(", "32", ")", "");
     TestTokenx("c(32+27)",  "c", "(", "32", "+", "27", ")", "");
     TestTokenx("c(32)*58",  "c", "(", "32", ")", "*", "58", "");
