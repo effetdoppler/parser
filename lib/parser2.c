@@ -7,7 +7,7 @@
 
 #define VALID_TOKENS "+-*/0123456789()"
 #define OPERATOR "+-*/^"
-#define NUMBER "0123456789."
+#define NUMBER "0123456789.,"
 #define SPECIALNUMBER "π"
 #define SEPARATOR "()"
 #define SPECIALTERM "ecsl"
@@ -77,7 +77,7 @@ Token* tokenize(const char* in, int* nbTokens) {
             // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
             while (strchr(NUMBER, in[i]) && i-start < MAX_INPUT_SIZE && i < in_len) 
             {
-                if(in[i] == '.')
+                if(in[i] == '.' || in[i] == ',')
                     wrong_number++;
                 i++;
             }
@@ -90,7 +90,10 @@ Token* tokenize(const char* in, int* nbTokens) {
             char *number = malloc((i-start+1)*sizeof(char));
             size_t ind = 0;
             while(start < i){
-                number[ind] = in[start];
+                if (in[start] == ',')
+                    number[ind] = '.';
+                else
+                    number[ind] = in[start];
                 start++;
                 ind++;
             }

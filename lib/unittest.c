@@ -126,7 +126,7 @@ int main()
     TestTokenx("3",  "3", "");
     TestTokenx("33",  "33", "");
     TestTokenx("3+33",  "3", "+", "33",  "");
-    TestTokenx("3.1+33",  "3.1", "+", "33",  "");
+    TestTokenx("3,1+33",  "3.1", "+", "33",  "");
     TestTokenx("(33+3)", "(", "33", "+", "3", ")", "");
     TestTokenx("(33+3)*8/7-5", "(", "33", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
     TestTokenx("(3.3+3)*8/7-5", "(", "3.3", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
@@ -136,9 +136,10 @@ int main()
     Testparser("c(98)*c(98)", cos(98)*cos(98));
     Testparser("c(98)", cos(98));
     Testparser("3.1+7", 3.1+7);
+    TestparserFail("3.101,4+7.3");
     Testparser("3+7-6", 3+7-6);
     Testparser("64*10", 64*10);
-    Testparser("6.5*2", 6.5*2);
+    Testparser("6,5*2", 6.5*2);
     Testparser("6.5/2", 6.5/2);
     Testparser("3-3^5+3", 3-pow(3, 5)+3);
     Testparser("-2^5", -pow(2, 5));
