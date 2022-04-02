@@ -8,6 +8,7 @@
 #define OPERATOR "+-*/"
 #define NUMBER "0123456789."
 #define SEPARATOR "()"
+#define SPECIALTERM "ecs"
 
 #define MAX_INPUT_SIZE 100
 
@@ -92,6 +93,14 @@ Token* tokenize(const char* in, int* nbTokens) {
             }
             if (strchr(SEPARATOR, in[i]))
                 tok->type = Separator;
+            if (strchr((SPECIALTERM), in[i]) == 1)
+            {
+                if(in[i+1] != "(")
+                    errx(EXIT_FAILURE, "invalid syntax");
+                tok->type = Specialterm;
+                
+            }
+                
             char *op = malloc((2)*sizeof(char));
             op[0] = in[i];
             op[1] = '\0';
@@ -119,7 +128,7 @@ exprtree* parse(Token* tokens, int nbtok) {
     parser->pos = 0;
 
     // Calculate the expression starting by parsing the tokens starting with the lowest priority
-    exprtree* expression = parse_add_expression(parser);
+    exprtree* expression = parse_special_expression(parser);
 
     // Free allocated memory
     free(parser->tokens);
@@ -128,12 +137,13 @@ exprtree* parse(Token* tokens, int nbtok) {
 }
 
 double calculate(exprtree* expr) {
-
     if (expr->type == 'n')
         return expr->value;
 
     double left = calculate(expr->left);
-    double right = calculate(expr->right);
+    double right;
+    if (expr->right)
+        right = calculate(expr->right);
     
     if (expr->type == '+')
         return left + right;
@@ -143,10 +153,35 @@ double calculate(exprtree* expr) {
         return left * right;
     else if (expr->type == '/')
         return left / right;
+    else if (expr->type == 'c')
+        return cos(left);
+    else if (expr->type == 's')
+        return sin(left);
+    else if (expr->type == 'e')
+        return exp(left);  
 
     return 0;
 }
+exprtree* parse_special_expression(parser_t* parser){
+    char type;
+    int *hasspecial = malloc(sizeof(int));
+    // After the mult_expression, add_expression can find 0 or more (+ or -) followed by another mult_expression
+    if (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == 'c' || *parser->tokens[parser->pos].value == 'e' || *parser->tokens[parser->pos].value == 's')) {
 
+        // Set expression type as either addition or subtraction
+        type = *parser->tokens[parser->pos].value;
+
+        // Consume the addition or subtraction token
+        parser->pos++;
+        *hasspecial = 1;
+       
+    }
+    exprtree* expr = parse_add_expression(parser);
+    if (*hasspecial == 1)
+        expr = create_exprtree(type, 0, expr, NULL); // value is set to 0 because operations don't use it
+    free(hasspecial);
+    return expr;
+}
 exprtree* parse_add_expression(parser_t* parser) {
 
     /* add_expression := mult_expression (('+' | '-') mult_expression) */
@@ -195,7 +230,7 @@ exprtree* parse_mult_expression(parser_t* parser) {
         exprtree* right_expr = parse_atomic_expression(parser);
 
         // we create a new expression with the //TODO
-        expr = create_exprtree(type, 0, expr, right_expr); // value is set to 0 because operations don't use it
+        expr = create_exprtree(type, 0, NULL, right_expr); // value is set to 0 because operations don't use it
     }
     
     return expr;
@@ -214,7 +249,7 @@ exprtree* parse_atomic_expression(parser_t* parser) {
         parser->pos++; // Consume parenthesis
 
         // Parse add_expression that should come between parenthesis
-        expr = parse_add_expression(parser);
+        expr = parse_special_expression(parser);
 
         // Consume the closing parenthesis
         if (*parser->tokens[parser->pos].value == ')')
@@ -247,6 +282,8 @@ exprtree* parse_number(parser_t* parser) {
         negatif = 1;
         parser->pos++;
     }
+    if (!(strchr(NUMBER, *parser->tokens[parser->pos].value)) && negatif == 0)
+        return NULL;
 
     double value;
     // Convert the number characters array to an int
