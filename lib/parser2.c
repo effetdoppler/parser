@@ -6,7 +6,7 @@
 
 #define VALID_TOKENS "+-*/0123456789()"
 #define OPERATOR "+-*/"
-#define NUMBER "0123456789.π"
+#define NUMBER "0123456789."
 #define SPECIALNUMBER "π"
 #define SEPARATOR "()"
 #define SPECIALTERM "ecs"
@@ -78,6 +78,13 @@ Token* tokenize(const char* in, int* nbTokens) {
             tokens[token_pos++] = *tok;
         }
         // Check if input character is a valid token
+        else if (strchr(SPECIALNUMBER, in[i]))
+        {
+            tok->type = Number;
+            tok->value = "3.14159265358979323846";
+            tokens[token_pos++] = *tok;
+            i = i+2;
+        }
         else
         {
             if (strchr(OPERATOR, in[i]))
@@ -92,8 +99,6 @@ Token* tokenize(const char* in, int* nbTokens) {
                 }
                 tok->type = Operator;
             }
-            if (strchr(SPECIALNUMBER, in[i]))
-                tok->type = Number;
             if (strchr(SEPARATOR, in[i]))
                 tok->type = Separator;
             if (strchr((SPECIALTERM), in[i]))
@@ -162,6 +167,8 @@ double calculate(exprtree* expr) {
         return sin(right);
     else if (expr->type == 'e')
         return exp(right);  
+    else if (expr->type == 'l')
+        return log(right);  
 
     return 0;
 }
@@ -272,7 +279,6 @@ exprtree* parse_number(parser_t* parser) {
         negatif = 1;
         parser->pos++;
     }
-
     double value;
     // Convert the number characters array to an int
     if (negatif == 1)
