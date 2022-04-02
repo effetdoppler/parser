@@ -39,11 +39,13 @@ int TestToken(const char* name, Token expected[])
     if (EqualTokens(tokens, nb, expected))
     {
         printf(ANSI_COLOR_GREEN "pass %s" ANSI_COLOR_RESET "\n", name);
+        free(tokens);
         return 1;
     }
     else
     {
         printf(ANSI_COLOR_RED "fail %s" ANSI_COLOR_RESET "\n", name);
+        free(tokens);
         return 0;
     }
 }
@@ -98,8 +100,6 @@ int Testparser(char* name, double expected)
 
 int main() 
 {
-    
-    
     TestTokenx("c(32)",  "c", "(", "32", ")", "");
     TestTokenx("c(32+27)",  "c", "(", "32", "+", "27", ")", "");
     TestTokenx("c(32)*58",  "c", "(", "32", ")", "*", "58", "");
