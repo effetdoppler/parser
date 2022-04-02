@@ -24,7 +24,7 @@ typedef struct parser_t {
 
 
 typedef struct exprtree {
-    char* type;
+    char type;
     double value;
     struct exprtree* left;
     struct exprtree* right;
@@ -33,11 +33,10 @@ typedef struct exprtree {
 Token* tokenize(const char*, int* nb);
 exprtree* parse(Token* tokens, int nbtok);
 double calculate(exprtree*);
-exprtree* parse_number(parser);
-exprtree* parse_add_expression(parser);
-exprtree* parse_mult_expression(parser);
+exprtree* parse_number(parser_t* parser);
+exprtree* parse_add_expression(parser_t* parser);
+exprtree* parse_mult_expression(parser_t* parser);
 exprtree* parse_power_expression(parser_t* parser);
-exprtree* parse_atomic_expression(parser);
-static exprtree* create_exprtree(char type, double value, exprtree* left, exprtree* right);
+exprtree* parse_atomic_expression(parser_t* parser);
 double parse_char(char* input);
 #endif // #define PARSER2_H

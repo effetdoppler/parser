@@ -27,7 +27,7 @@
 
 
 
-int test_operator(char* in, int ind)
+size_t test_operator(const char* in, size_t ind)
 {
     if (ind+1 == strlen(in))
         return 2;
@@ -45,16 +45,16 @@ Token* tokenize(const char* in, int* nbTokens) {
     int token_pos = 0; // token_pos will track the amount of tokens in the token string
 
     // Iterate over the input string and everytime a token is found, add it to the tokens
-    int in_len = strlen(in);
-    int i = 0;
+    size_t in_len = strlen(in);
+    size_t i = 0;
     while (i < in_len)
     {
         // Check if input character is a valid token
         Token *tok = malloc(sizeof(Token));
-        int start = i;
+        size_t start = i;
         if (strchr(NUMBER, in[i]))
         {
-            int wrong_number = 0;
+            size_t wrong_number = 0;
             // Add to number if it is
             // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
             while (strchr(NUMBER, in[i]) && i-start < MAX_INPUT_SIZE && i < in_len) 
@@ -67,7 +67,7 @@ Token* tokenize(const char* in, int* nbTokens) {
                  errx(EXIT_FAILURE, "Invalid syntax: not a number");
             //settup token
             char *number = malloc((i-start+1)*sizeof(char));
-            int ind = 0;
+            size_t ind = 0;
             while(start < i){
                 number[ind] = in[start];
                 start++;
@@ -124,6 +124,23 @@ Token* tokenize(const char* in, int* nbTokens) {
     *nbTokens = token_pos;
     return tokens;
 }
+
+
+static exprtree* create_exprtree(char type, double value, exprtree* left, exprtree* right) {
+
+    // Allocate memory for the expression
+    exprtree* expr = malloc(sizeof(exprtree));
+
+    // Set values for the expression
+    expr->type = type;
+    expr->value = value;
+    expr->left = left;
+    expr->right = right;
+
+    return expr;
+
+}
+
 
 /* Parse tokens into expression tree based on grammar */
 exprtree* parse(Token* tokens, int nbtok) {
@@ -325,22 +342,6 @@ exprtree* parse_number(parser_t* parser) {
     return number_expr;
 
 }
-
-static exprtree* create_exprtree(char type, double value, exprtree* left, exprtree* right) {
-
-    // Allocate memory for the expression
-    exprtree* expr = malloc(sizeof(exprtree));
-
-    // Set values for the expression
-    expr->type = type;
-    expr->value = value;
-    expr->left = left;
-    expr->right = right;
-
-    return expr;
-
-}
-
 static void free_exprtree(exprtree* expr) {
 
     // Free the expression recursively
