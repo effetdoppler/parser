@@ -116,8 +116,8 @@ int main()
     Testparser("64*10", 64*10);
     Testparser("6.5*2", 6.5*2);
     Testparser("6.5/2", 6.5/2);
-    Testparser("3^5", pow(3, 5));
-    Testparser("2^5", pow(2, 5));
+    Testparser("3-3^5+3", 3-pow(3, 5)+3);
+    Testparser("-2^5", -pow(2, 5));
     Testparser("c(π)", cos(M_PI));
     Testparser("s(π)", sin(M_PI));
     Testparser("l(1)", log(1));

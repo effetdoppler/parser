@@ -157,7 +157,6 @@ exprtree* parse(Token* tokens, int nbtok) {
     exprtree* expression = parse_add_expression(parser);
 
     // Free allocated memory
-    free(parser->tokens);
     free(parser);
     return expression;
 }
@@ -166,7 +165,7 @@ double calculate(exprtree* expr) {
     if (expr->type == 'n')
         return expr->value;
 
-    double left;
+    double left = 0;
     if(expr->left)
         left = calculate(expr->left);
     double right = calculate(expr->right);
@@ -276,8 +275,8 @@ exprtree* parse_atomic_expression(parser_t* parser) {
 
     /* atomic_expression := number | left_parenthesis add_expression right_parenthesis */
 
-    exprtree* expr;
-    char specialterm;
+    exprtree* expr = NULL;
+    char specialterm = 0;
     if (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == 'c' || *parser->tokens[parser->pos].value == 's' || *parser->tokens[parser->pos].value == 'e' || *parser->tokens[parser->pos].value == 'l'))
     {
         specialterm = *parser->tokens[parser->pos].value;
@@ -372,6 +371,7 @@ double parse_char(char* input)
 
         // 6. Free the memory allocated for the expression
         free_exprtree(expression);
+        free(tokens);
 
         return value;
 }
