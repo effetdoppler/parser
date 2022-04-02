@@ -12,7 +12,7 @@
 
 const Token END_TOKEN = { .value = "", .type = Operator };
 
-int EqualToken(Token* t1, Token* t2)
+int EqualToken(const Token* t1, const Token* t2)
 {
     return strcmp(t1->value, t2->value) == 0;// && t1->type == t2->type;
 }
@@ -84,9 +84,15 @@ int Testparser(char* name, double expected)
 {
     double res = parse_char(name);
     if (fabs(res - expected) < 1.e-10)
+    {
         printf(ANSI_COLOR_GREEN "pass %s" ANSI_COLOR_RESET "\n", name);
+        return 1;
+    }
     else
+    {
         printf(ANSI_COLOR_RED "fail %s=%.6g (expected %.6g)" ANSI_COLOR_RESET "\n", name, res, expected);
+        return 0;
+    }
 }
 
 
