@@ -3,6 +3,7 @@
 #include <string.h>
 #include <err.h>
 #include <stdarg.h>
+#include <math.h>
 #include "parser2.h"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
@@ -82,24 +83,22 @@ int TestTokenx(const char* name, ...)
 int Testparser(char* name, double expected)
 {
     double res = parse_char(name);
-    if (res == expected)
-        printf(ANSI_COLOR_GREEN "pass %g" ANSI_COLOR_RESET "\n", res);
+    if (fabs(res - expected) < 1.e-10)
+        printf(ANSI_COLOR_GREEN "pass %s" ANSI_COLOR_RESET "\n", name);
     else
-        printf(ANSI_COLOR_RED "fail %g" ANSI_COLOR_RESET "\n", res);
+        printf(ANSI_COLOR_RED "fail %s=%.6g (expected %.6g)" ANSI_COLOR_RESET "\n", name, res, expected);
 }
 
 
 int main() 
 {
     
-    Testparser("c(98)", 10);
     TestTokenx("c(32)",  "c", "(", "32", ")", "");
     TestTokenx("c(32+27)",  "c", "(", "32", "+", "27", ")", "");
     TestTokenx("c(32)*58",  "c", "(", "32", ")", "*", "58", "");
     TestTokenx("c(32)*c(32)",  "c", "(", "32", ")", "*",  "c", "(", "32", ")", "");
     TestTokenx("s(21)",  "s", "(", "21", ")", "");
     TestTokenx("e(10)",  "e", "(", "10", ")", "");
-    Testparser("c(98)*c(98)", 10);
     TestTokenx("3",  "3", "");
     TestTokenx("33",  "33", "");
     TestTokenx("3+33",  "3", "+", "33",  "");
@@ -107,11 +106,15 @@ int main()
     TestTokenx("(33+3)", "(", "33", "+", "3", ")", "");
     TestTokenx("(33+3)*8/7-5", "(", "33", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
     TestTokenx("(3.3+3)*8/7-5", "(", "3.3", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
+    printf("========parser=========\n");
     Testparser("3", 3);
-    Testparser("3+7-6", 4);
-    Testparser("64*10", 640);
-    Testparser("6.5*2", 13);
-    Testparser("6.5/2", 3.25);
+    Testparser("c(98)*c(98)", cos(98)*cos(98));
+    Testparser("c(98)", cos(98));
+    Testparser("3.1+7", 3.1+7);
+    Testparser("3+7-6", 3+7-6);
+    Testparser("64*10", 64*10);
+    Testparser("6.5*2", 6.5*2);
+    Testparser("6.5/2", 6.5/2);
     
     return 0;
 }
