@@ -14,6 +14,9 @@
 
 #define MAX_INPUT_SIZE 100
 
+//static const char* global_error = NULL;
+static Result result;
+
 // Create parser structure to keep track of the tokens consumed
 typedef struct parser_t {
     Token* tokens;
@@ -79,7 +82,10 @@ Token* tokenize(const char* in, int* nbTokens) {
                 i++;
             }
             if (wrong_number > 1)
-                 errx(EXIT_FAILURE, "Invalid syntax: not a number");
+            {
+                 result.err = "Invalid syntax: not a number";                 
+                 return tokens;
+            }
             //settup token
             char *number = malloc((i-start+1)*sizeof(char));
             size_t ind = 0;
@@ -107,11 +113,14 @@ Token* tokenize(const char* in, int* nbTokens) {
             {
                 // Add to tokens if it is
                 if (test_operator(in, i) == 1)
-                    errx(EXIT_FAILURE, "Invalid syntax: two operator");
-                else
                 {
-                    if(test_operator(in, i) == 2)
-                        errx(EXIT_FAILURE, "Invalid syntax: no expression after an operator");
+                    result.err = "Invalid syntax: two consecutive operators";
+                    return tokens;
+                }
+                if(test_operator(in, i) == 2)
+                {
+                    result.err = "Invalid syntax: no expression after an operator";
+                    return tokens;
                 }
                 tok->type = Operator;
             }
@@ -120,9 +129,11 @@ Token* tokenize(const char* in, int* nbTokens) {
             if (strchr((SPECIALTERM), in[i]))
             {
                 if(in[i+1] != '(')
-                    errx(EXIT_FAILURE, "invalid syntax");
-                tok->type = Specialterm;
-                
+                {
+                    result.err = "Invalid syntax: function must be followed by '('";
+                    return tokens;
+                }
+                tok->type = Specialterm;                
             }
                 
             char *op = malloc((2)*sizeof(char));
@@ -311,8 +322,8 @@ exprtree* parse_atomic_expression(parser_t* parser) {
         else {
             
             // Error if there aren't any
-            fprintf(stderr, "Invalid input\n");
-            exit(1);
+            result.err = "Invalid input: mismatched (";
+            return expr;
         }
         
     } else {
@@ -371,22 +382,34 @@ static void free_exprtree(exprtree* expr) {
 
     }
 }
-double parse_char(const char* input)
-{
-        // 2. Get tokens from the input string
-        int nbtoken;
-        Token* tokens = tokenize(input, &nbtoken);
 
-        // 3. Create expression tree from tokens
+Result calculate_char(const char* input)
+{
+    // 2. Get tokens from the input string
+    int nbtoken;
+    result.value = nan("");
+    result.err = NULL;
+    Token* tokens = tokenize(input, &nbtoken);
+
+    // 3. Create expression tree from tokens
+    if (result.err == NULL)
+    {
         exprtree* expression = parse(tokens, nbtoken);
 
         // 4. Calculate the value of the expression
-        double value = calculate(expression);
-
+        if (result.err == NULL)
+            result.value = calculate(expression);
 
         // 6. Free the memory allocated for the expression
         free_exprtree(expression);
-        free(tokens);
+    }
+    free(tokens);
 
-        return value;
+    return result;
+}
+
+double parse_char(const char* input)
+{
+    Result v = calculate_char(input);
+    return v.value;
 }

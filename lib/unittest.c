@@ -50,8 +50,6 @@ int TestToken(const char* name, Token expected[])
     }
 }
 
-//int test_parser()
-
 int TestTokenx(const char* name, ...)
 {
     va_list valist;
@@ -81,18 +79,37 @@ int TestTokenx(const char* name, ...)
     return TestToken(name, expected);
 }
 
-
-int Testparser(char* name, double expected)
+int TestparserFail(char* name)
 {
-    double res = parse_char(name);
-    if (fabs(res - expected) < 1.e-10)
+    Result res = calculate_char(name);
+    if (res.err != NULL)
     {
         printf(ANSI_COLOR_GREEN "pass %s" ANSI_COLOR_RESET "\n", name);
         return 1;
     }
     else
     {
-        printf(ANSI_COLOR_RED "fail %s=%.6g (expected %.6g)" ANSI_COLOR_RESET "\n", name, res, expected);
+        printf(ANSI_COLOR_RED "fail %s=%.6g (expected input error)" ANSI_COLOR_RESET "\n", name, res.value);
+        return 0;
+    }
+}
+
+int Testparser(char* name, double expected)
+{
+    Result res = calculate_char(name);
+    if (res.err != NULL)
+    {
+        printf(ANSI_COLOR_RED "fail %s=%s (expected %.6g)" ANSI_COLOR_RESET "\n", name, res.err, expected);
+        return 0;
+    }
+    else if (fabs(res.value - expected) < 1.e-10)
+    {
+        printf(ANSI_COLOR_GREEN "pass %s" ANSI_COLOR_RESET "\n", name);
+        return 1;
+    }
+    else
+    {
+        printf(ANSI_COLOR_RED "fail %s=%.6g (expected %.6g)" ANSI_COLOR_RESET "\n", name, res.value, expected);
         return 0;
     }
 }
@@ -115,6 +132,7 @@ int main()
     TestTokenx("(3.3+3)*8/7-5", "(", "3.3", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
     printf("========parser=========\n");
     Testparser("3", 3);
+    TestparserFail("c3");
     Testparser("c(98)*c(98)", cos(98)*cos(98));
     Testparser("c(98)", cos(98));
     Testparser("3.1+7", 3.1+7);
