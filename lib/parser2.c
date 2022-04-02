@@ -3,13 +3,14 @@
 #include <string.h>
 #include <err.h>
 #include "parser2.h"
+#include <math.h>
 
 #define VALID_TOKENS "+-*/0123456789()"
 #define OPERATOR "+-*/"
 #define NUMBER "0123456789."
 #define SPECIALNUMBER "π"
 #define SEPARATOR "()"
-#define SPECIALTERM "ecs"
+#define SPECIALTERM "ecsl"
 
 #define MAX_INPUT_SIZE 100
 
@@ -233,7 +234,7 @@ exprtree* parse_atomic_expression(parser_t* parser) {
 
     exprtree* expr;
     char specialterm;
-    if (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == 'c' || *parser->tokens[parser->pos].value == 's' || *parser->tokens[parser->pos].value == 'e'))
+    if (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == 'c' || *parser->tokens[parser->pos].value == 's' || *parser->tokens[parser->pos].value == 'e' || *parser->tokens[parser->pos].value == 'l'))
     {
         specialterm = *parser->tokens[parser->pos].value;
         parser->pos++;
