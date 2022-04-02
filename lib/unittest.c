@@ -91,6 +91,15 @@ int Testparser(char* name, double expected)
 
 int main() 
 {
+    
+    Testparser("c(98)", 10);
+    TestTokenx("c(32)",  "c", "(", "32", ")", "");
+    TestTokenx("c(32+27)",  "c", "(", "32", "+", "27", ")", "");
+    TestTokenx("c(32)*58",  "c", "(", "32", ")", "*", "58", "");
+    TestTokenx("c(32)*c(32)",  "c", "(", "32", ")", "*",  "c", "(", "32", ")", "");
+    TestTokenx("s(21)",  "s", "(", "21", ")", "");
+    TestTokenx("e(10)",  "e", "(", "10", ")", "");
+    Testparser("c(98)*c(98)", 10);
     TestTokenx("3",  "3", "");
     TestTokenx("33",  "33", "");
     TestTokenx("3+33",  "3", "+", "33",  "");
