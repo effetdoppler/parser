@@ -36,6 +36,7 @@ double calculate(exprtree*);
 exprtree* parse_number(parser);
 exprtree* parse_add_expression(parser);
 exprtree* parse_mult_expression(parser);
+exprtree* parse_power_expression(parser_t* parser);
 exprtree* parse_atomic_expression(parser);
 static exprtree* create_exprtree(char type, double value, exprtree* left, exprtree* right);
 double parse_char(char* input);

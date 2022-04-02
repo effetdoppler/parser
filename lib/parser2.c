@@ -6,7 +6,7 @@
 #include <math.h>
 
 #define VALID_TOKENS "+-*/0123456789()"
-#define OPERATOR "+-*/"
+#define OPERATOR "+-*/^"
 #define NUMBER "0123456789."
 #define SPECIALNUMBER "π"
 #define SEPARATOR "()"
@@ -162,6 +162,8 @@ double calculate(exprtree* expr) {
         return left * right;
     else if (expr->type == '/')
         return left / right;
+    else if (expr->type == '^')
+        return pow(left, right);
     else if (expr->type == 'c')
         return cos(right);
     else if (expr->type == 's')
@@ -206,7 +208,7 @@ exprtree* parse_mult_expression(parser_t* parser) {
     /* mult_expression := atomic_expression (('*' | '/') atomic_expression) */
 
     // a mult_expression is composed firstly of an atomic_expression, so we parse one right away
-    exprtree* expr = parse_atomic_expression(parser);
+    exprtree* expr = parse_power_expression(parser);
     
     // mult_expression can find 0 or more (* or /) followed by another atomic_expression
     while (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == '*' || *parser->tokens[parser->pos].value == '/')) {
@@ -218,7 +220,7 @@ exprtree* parse_mult_expression(parser_t* parser) {
         parser->pos++;
 
         // parse an atomic_expression that should come right after (* or /)
-        exprtree* right_expr = parse_atomic_expression(parser);
+        exprtree* right_expr = parse_power_expression(parser);
 
         // we create a new expression with the //TODO
         expr = create_exprtree(type, 0, expr, right_expr); // value is set to 0 because operations don't use it
@@ -227,7 +229,32 @@ exprtree* parse_mult_expression(parser_t* parser) {
     return expr;
 
 }
+exprtree* parse_power_expression(parser_t* parser) {
 
+    /* add_expression := mult_expression (('+' | '-') mult_expression) */
+
+    // An add_expression is composed firstly of a mult_expression, so we parse one right away
+    exprtree* expr = parse_atomic_expression(parser);
+    
+    // After the mult_expression, add_expression can find 0 or more (+ or -) followed by another mult_expression
+    while (parser->pos < parser->ntokens && (*parser->tokens[parser->pos].value == '^')) {
+
+        // Set expression type as either addition or subtraction
+        char type = *parser->tokens[parser->pos].value;
+
+        // Consume the addition or subtraction token
+        parser->pos++;
+
+        // Parse a mult_expression that should come right after (+ or -)
+        exprtree* right_expr = parse_atomic_expression(parser);
+
+        // We create a new expression with the ... //TODO
+        expr = create_exprtree(type, 0, expr, right_expr); // value is set to 0 because operations don't use it
+    }
+    
+    return expr;
+
+} 
 exprtree* parse_atomic_expression(parser_t* parser) {
 
     /* atomic_expression := number | left_parenthesis add_expression right_parenthesis */
