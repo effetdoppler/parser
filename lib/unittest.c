@@ -117,10 +117,10 @@ int Testparser(char* name, double expected)
 
 int main() 
 {
-    TestTokenx("cos(32)",  "c", "(", "32", ")", "");
-    TestTokenx("cos(32+27)",  "c", "(", "32", "+", "27", ")", "");
+    TestTokenx("cos (32)",  "c", "(", "32", ")", "");
+    TestTokenx("cos(32 + 27)",  "c", "(", "32", "+", "27", ")", "");
     TestTokenx("cos(32)*58",  "c", "(", "32", ")", "*", "58", "");
-    TestTokenx("cos(32)*cos(32)",  "c", "(", "32", ")", "*",  "c", "(", "32", ")", "");
+    TestTokenx("cos(32)*cos( 32)",  "c", "(", "32", ")", "*",  "c", "(", "32", ")", "");
     TestTokenx("sin(21)",  "s", "(", "21", ")", "");
     TestTokenx("exp(10)",  "e", "(", "10", ")", "");
     TestTokenx("3",  "3", "");
@@ -132,16 +132,18 @@ int main()
     TestTokenx("(3.3+3)*8/7-5", "(", "3.3", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
     printf("========parser=========\n");
     Testparser("3", 3);
-    TestparserFail("cos3");
+    Testparser("-3", -3);
+    Testparser("(3.23)", 3.23);
+    TestparserFail("cos");
     TestparserFail("f(3)");
     TestparserFail("cosf(3)");
     TestparserFail("3+cos");
-    Testparser("cos(98)*cos(98)", cos(98)*cos(98));
+    Testparser("cos98 * cos98", cos(98)*cos(98));
     Testparser("cos(98)", cos(98));
-    Testparser("3.1+7", 3.1+7);
-    TestparserFail("3.101,4+7.3");
-    Testparser("3+7-6", 3+7-6);
-    Testparser("64*10", 64*10);
+    Testparser("3.1 + 7", 3.1+7);
+    TestparserFail("3.101,4+ 7.3");
+    Testparser("3+7 - 6", 3+7-6);
+    Testparser("6 4*10", 64*10);
     Testparser("6,5*2", 6.5*2);
     Testparser("6.5/2", 6.5/2);
     Testparser("3-3^5+3", 3-pow(3, 5)+3);

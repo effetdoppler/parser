@@ -68,6 +68,11 @@ Token* tokenize(const char* in, int* nbTokens) {
     size_t i = 0;
     while (i < in_len)
     {
+        if (in[i] == ' ')
+        {
+            i++;
+            continue;
+        }
         // Check if input character is a valid token
         Token *tok = malloc(sizeof(Token));
         size_t start = i;
@@ -76,7 +81,7 @@ Token* tokenize(const char* in, int* nbTokens) {
             size_t wrong_number = 0;
             // Add to number if it is
             // We'll read the consecutive numbers into a character array, and then convert it to a number with atoi
-            while (strchr(NUMBER, in[i]) && i-start < MAX_INPUT_SIZE && i < in_len) 
+            while ((strchr(NUMBER, in[i]) || in[i] == ' ') && i-start < MAX_INPUT_SIZE && i < in_len) 
             {
                 if(in[i] == '.' || in[i] == ',')
                     wrong_number++;
@@ -91,12 +96,15 @@ Token* tokenize(const char* in, int* nbTokens) {
             char *number = malloc((i-start+1)*sizeof(char));
             size_t ind = 0;
             while(start < i){
-                if (in[start] == ',')
-                    number[ind] = '.';
-                else
-                    number[ind] = in[start];
+                if (in[start] != ' ')
+                {
+                    if (in[start] == ',')
+                        number[ind] = '.';
+                    else if (in[start] != ' ')
+                        number[ind] = in[start];
+                    ind++;
+                }
                 start++;
-                ind++;
             }
             number[ind] = '\0';
             tok->value = number;
@@ -134,7 +142,7 @@ Token* tokenize(const char* in, int* nbTokens) {
                     return tokens;                        
                 }
                 free(func);
-                if(i == in_len || in[i] != '(')
+                if(i == in_len)
                 {
                     result.err = "Invalid syntax: function must be followed by '('";
                     return tokens;
