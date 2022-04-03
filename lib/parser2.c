@@ -4,6 +4,7 @@
 #include <err.h>
 #include "parser2.h"
 #include <math.h>
+#include <ctype.h>
 
 #define VALID_TOKENS "+-*/0123456789()"
 #define OPERATOR "+-*/^"
@@ -110,6 +111,47 @@ Token* tokenize(const char* in, int* nbTokens) {
             tokens[token_pos++] = *tok;
             i = i+2;
         }
+        else if (isalpha((int)in[i]))
+        {
+            if (strchr((SPECIALTERM), in[i]))
+            {
+                i++;
+                while (isalpha((int)in[i]) && i < in_len) 
+                {
+                    i++;
+                }
+                char* func = malloc(sizeof(char) * (i-start+1));
+                for (size_t x = start; x < i; x++)
+                    func[x-start] = in[x];
+                func[i-start] = '\0';
+                if ( strcmp(func, "cos") != 0 &&
+                        strcmp(func, "sin") != 0 &&
+                        strcmp(func, "exp") != 0 &&
+                        strcmp(func, "log") != 0)
+                {
+                    result.err = "Invalid syntax: invalid function";
+                    free(func);
+                    return tokens;                        
+                }
+                free(func);
+                if(i == in_len || in[i] != '(')
+                {
+                    result.err = "Invalid syntax: function must be followed by '('";
+                    return tokens;
+                }  
+                char *op = malloc((2)*sizeof(char));
+                op[0] = in[start];
+                op[1] = '\0';
+                tok->value = op;
+                tok->type = Specialterm;
+                tokens[token_pos++] = *tok;            
+            }
+            else
+            {
+                result.err = "Invalid syntax: invalid function";
+                return tokens;
+            }
+        }
         else
         {
             if (strchr(OPERATOR, in[i]))
@@ -127,18 +169,8 @@ Token* tokenize(const char* in, int* nbTokens) {
                 }
                 tok->type = Operator;
             }
-            if (strchr(SEPARATOR, in[i]))
+            else if (strchr(SEPARATOR, in[i]))
                 tok->type = Separator;
-            if (strchr((SPECIALTERM), in[i]))
-            {
-                if(in[i+1] != '(')
-                {
-                    result.err = "Invalid syntax: function must be followed by '('";
-                    return tokens;
-                }
-                tok->type = Specialterm;                
-            }
-                
             char *op = malloc((2)*sizeof(char));
             op[0] = in[i];
             op[1] = '\0';

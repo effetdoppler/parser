@@ -117,12 +117,12 @@ int Testparser(char* name, double expected)
 
 int main() 
 {
-    TestTokenx("c(32)",  "c", "(", "32", ")", "");
-    TestTokenx("c(32+27)",  "c", "(", "32", "+", "27", ")", "");
-    TestTokenx("c(32)*58",  "c", "(", "32", ")", "*", "58", "");
-    TestTokenx("c(32)*c(32)",  "c", "(", "32", ")", "*",  "c", "(", "32", ")", "");
-    TestTokenx("s(21)",  "s", "(", "21", ")", "");
-    TestTokenx("e(10)",  "e", "(", "10", ")", "");
+    TestTokenx("cos(32)",  "c", "(", "32", ")", "");
+    TestTokenx("cos(32+27)",  "c", "(", "32", "+", "27", ")", "");
+    TestTokenx("cos(32)*58",  "c", "(", "32", ")", "*", "58", "");
+    TestTokenx("cos(32)*cos(32)",  "c", "(", "32", ")", "*",  "c", "(", "32", ")", "");
+    TestTokenx("sin(21)",  "s", "(", "21", ")", "");
+    TestTokenx("exp(10)",  "e", "(", "10", ")", "");
     TestTokenx("3",  "3", "");
     TestTokenx("33",  "33", "");
     TestTokenx("3+33",  "3", "+", "33",  "");
@@ -132,9 +132,12 @@ int main()
     TestTokenx("(3.3+3)*8/7-5", "(", "3.3", "+", "3", ")", "*", "8", "/", "7", "-", "5","");
     printf("========parser=========\n");
     Testparser("3", 3);
-    TestparserFail("c3");
-    Testparser("c(98)*c(98)", cos(98)*cos(98));
-    Testparser("c(98)", cos(98));
+    TestparserFail("cos3");
+    TestparserFail("f(3)");
+    TestparserFail("cosf(3)");
+    TestparserFail("3+cos");
+    Testparser("cos(98)*cos(98)", cos(98)*cos(98));
+    Testparser("cos(98)", cos(98));
     Testparser("3.1+7", 3.1+7);
     TestparserFail("3.101,4+7.3");
     Testparser("3+7-6", 3+7-6);
@@ -143,11 +146,12 @@ int main()
     Testparser("6.5/2", 6.5/2);
     Testparser("3-3^5+3", 3-pow(3, 5)+3);
     Testparser("-2^5", -pow(2, 5));
-    Testparser("c(π)", cos(M_PI));
-    Testparser("s(π)", sin(M_PI));
-    Testparser("l(1)", log(1));
-    Testparser("c(98)", cos(98));
-    Testparser("e(1)", exp(1));
+    Testparser("cos(π)", cos(M_PI));
+    Testparser("sin(π)", sin(M_PI));
+    Testparser("log(1)", log(1));
+    Testparser("cos(98)", cos(98));
+    Testparser("exp(log(2))", exp(log(2)));
+    Testparser("3+2*exp(log(2))-6+(sin(3,2)+2*log(3))^(-2*2.5/3+π*2)", 3+2*exp(log(2))-6+pow(sin(3.2)+2*log(3), -2*2.5/3+M_PI*2));
     
     return 0;
 }
