@@ -89,7 +89,7 @@ Token* tokenize(const char* in, int* nbTokens) {
             }
             if (wrong_number > 1)
             {
-                 result.err = "Invalid syntax: not a number";                 
+                 result.err = "not a number";                 
                  return tokens;
             }
             //settup token
@@ -137,14 +137,14 @@ Token* tokenize(const char* in, int* nbTokens) {
                         strcmp(func, "exp") != 0 &&
                         strcmp(func, "log") != 0)
                 {
-                    result.err = "Invalid syntax: invalid function";
+                    result.err = "invalid function";
                     free(func);
                     return tokens;                        
                 }
                 free(func);
                 if(i == in_len)
                 {
-                    result.err = "Invalid syntax: function must be followed by '('";
+                    result.err = "function must be followed by '('";
                     return tokens;
                 }  
                 char *op = malloc((2)*sizeof(char));
@@ -156,7 +156,7 @@ Token* tokenize(const char* in, int* nbTokens) {
             }
             else
             {
-                result.err = "Invalid syntax: invalid function";
+                result.err = "invalid function";
                 return tokens;
             }
         }
@@ -167,12 +167,12 @@ Token* tokenize(const char* in, int* nbTokens) {
                 // Add to tokens if it is
                 if (test_operator(in, i) == 1)
                 {
-                    result.err = "Invalid syntax: two consecutive operators";
+                    result.err = "two consecutive operators";
                     return tokens;
                 }
                 if(test_operator(in, i) == 2)
                 {
-                    result.err = "Invalid syntax: no expression after an operator";
+                    result.err = "no expression after an operator";
                     return tokens;
                 }
                 tok->type = Operator;
@@ -276,6 +276,12 @@ exprtree* parse_add_expression(parser_t* parser) {
         // Consume the addition or subtraction token
         parser->pos++;
 
+        if (parser->pos >= parser->ntokens)
+        {
+            result.err = "no right expr";
+            break;
+        }
+
         // Parse a mult_expression that should come right after (+ or -)
         exprtree* right_expr = parse_mult_expression(parser);
 
@@ -304,6 +310,12 @@ exprtree* parse_mult_expression(parser_t* parser) {
         // consume the multiplication or division token
         parser->pos++;
 
+        if (parser->pos >= parser->ntokens)
+        {
+            result.err = "no right expr";
+            break;
+        }
+
         // parse an atomic_expression that should come right after (* or /)
         exprtree* right_expr = parse_power_expression(parser);
 
@@ -330,6 +342,12 @@ exprtree* parse_power_expression(parser_t* parser) {
         // Consume the addition or subtraction token
         parser->pos++;
 
+        if (parser->pos >= parser->ntokens)
+        {
+            result.err = "no right expr";
+            break;
+        }
+
         // Parse a mult_expression that should come right after (+ or -)
         exprtree* right_expr = parse_atomic_expression(parser);
 
@@ -350,7 +368,16 @@ exprtree* parse_atomic_expression(parser_t* parser) {
     {
         specialterm = *parser->tokens[parser->pos].value;
         parser->pos++;
+        exprtree* right_expr = parse_atomic_expression(parser);
+        return create_exprtree(specialterm, 0, NULL, right_expr);
     }
+
+    if (parser->pos >= parser->ntokens)
+    {
+        result.err = "empty atomic expression";
+        return NULL;
+    }
+
     // If we find parenthesis, then we read an add_expression as an atomic one
     if (*parser->tokens[parser->pos].value == '(') {
 
@@ -359,13 +386,19 @@ exprtree* parse_atomic_expression(parser_t* parser) {
         // Parse add_expression that should come between parenthesis
         expr = parse_add_expression(parser);
 
+        if (expr == NULL)
+        {
+            result.err = "bad +/- expression";
+            return expr;
+        }
+
         // Consume the closing parenthesis
-        if (*parser->tokens[parser->pos].value == ')')
+        if (parser->pos < parser->ntokens && *parser->tokens[parser->pos].value == ')')
             parser->pos++;
         else {
             
             // Error if there aren't any
-            result.err = "Invalid input: mismatched (";
+            result.err = "mismatched (";
             return expr;
         }
         
@@ -374,8 +407,6 @@ exprtree* parse_atomic_expression(parser_t* parser) {
         // This is the alternative production rule - an atomic expression can be just a number
         expr = parse_number(parser);
     }
-    if (specialterm)
-        expr = create_exprtree(specialterm, 0, NULL, expr);
     
     return expr;
 
@@ -385,23 +416,34 @@ exprtree* parse_number(parser_t* parser) {
 
     /* number := (0-9)+ */
 
-    int negatif = 0;
+    if (parser->pos >= parser->ntokens)
+    {
+        result.err = "empty number expression";
+        return NULL;
+    }
+    
     if (strchr("-", *parser->tokens[parser->pos].value))
     {
         //number[numberlen] = parser->tokens[parser->pos];
-        negatif = 1;
         parser->pos++;
+
+        exprtree* right_expr = parse_atomic_expression(parser);
+        if (right_expr == NULL)
+        {
+            result.err = "- must be folowed by a number";
+            return NULL;
+        }
+
+        exprtree* left_expr = create_exprtree('n', 0, NULL, NULL);
+        return create_exprtree('-', 0, left_expr, right_expr);
     }
-    double value;
-    // Convert the number characters array to an int
-    if (negatif == 1)
+
+    if (parser->tokens[parser->pos].type != Number)
     {
-        value = -atof(parser->tokens[parser->pos].value);
+        result.err = "missing number expression";
+        return NULL;
     }
-    else
-    {
-        value = atof(parser->tokens[parser->pos].value);
-    }
+    double value = atof(parser->tokens[parser->pos].value);
 
     parser->pos++;
     // Create an expression of type 'n' with the value set as the number value
